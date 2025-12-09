@@ -1,38 +1,16 @@
 import express from 'express';
+import authRoutes from './auth.route.js';
+import weatherRoutes from './weather.route.js';
+import userRoutes from './user.route.js';
+import adminRoutes from './admin.route.js';
+
 const router = express.Router();
 
-//Controllers
-import weatherController from '../controllers/weather.controller.js';
-import adminController from '../controllers/admin.controller.js';
-import authController from '../controllers/auth.controller.js';
-import dashboardController from '../controllers/dashboard.controller.js';
+router.use('/auth', authRoutes);
+router.use('/weather', weatherRoutes);
+router.use('/user', userRoutes);
+router.use('/admin', adminRoutes);
 
-//Middlewares
-import validate from '../middlewares/validation.middleware.js';
-import authMiddleware from '../middlewares/auth.middleware.js';
+router.get('/', (req, res) => res.send('Welcome to Weather API App!'));
 
-//Validation Schemas
-import { registerSchema, loginSchema, weatherQuery } from '../utils/validator.util.js';
-
-
-
-//Auth Routes
-router.get('/login', (req, res) => res.render('login'));
-router.get('/signup', (req, res) => res.render('signup'));
-
-router.post('/register', validate(registerSchema), authController.register);
-router.post('/login', validate(loginSchema), authController.login);
-
-
-//Weather Routes
-router.get('/', weatherController.showWeatherPage);
-router.post('/fetch', validate(weatherQuery), weatherController.getWeather);
-
-//Dashboard Routes
-router.get('/', authMiddleware, dashboardController.showDashboard);
-router.post('/generate-key', authMiddleware, dashboardController.generateApiKey);
-
-//Admin Routes
-router.get('/', authMiddleware, adminController.showAdminPanel);
-
-module.exports = router;
+export default router;

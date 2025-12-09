@@ -1,0 +1,28 @@
+<% layout('layout', { title: 'Admin Panel' , user }) %>
+
+    <h2 class="mb-4 animate__animated animate__fadeInDown">Admin Panel</h2>
+
+    <table class="table table-striped table-hover animate__animated animate__fadeInUp">
+        <thead class="table-dark">
+            <tr>
+                <th>Email</th>
+                <th>API Key</th>
+                <th>Registered At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% users.forEach(u=> { %>
+                <tr>
+                    <td>
+                        <%= u.email %>
+                    </td>
+                    <td>
+                        <%= u.apiKey || 'N/A' %>
+                    </td>
+                    <td>
+                        <%= u.createdAt.toLocaleString() %>
+                    </td>
+                </tr>
+                <% }) %>
+        </tbody>
+    </table>

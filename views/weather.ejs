@@ -1,0 +1,37 @@
+<% layout('layout', { title: 'Weather' }) %>
+
+    <div class="row">
+        <div class="col-md-6 offset-md-3 animate__animated animate__fadeIn">
+            <div class="card p-4 shadow-sm">
+                <h3 class="text-center mb-4">Check Weather</h3>
+                <form action="/weather/fetch" method="POST">
+                    <div class="mb-3">
+                        <label>City Name</label>
+                        <input type="text" name="city" class="form-control" placeholder="London">
+                    </div>
+                    <div class="mb-3">
+                        <label>Units</label>
+                        <select name="units" class="form-select">
+                            <option value="metric" selected>Celsius</option>
+                            <option value="imperial">Fahrenheit</option>
+                            <option value="standard">Kelvin</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100">Get Weather</button>
+                </form>
+
+                <% if (weatherData) { %>
+                    <div class="mt-4 p-3 bg-light rounded shadow-sm animate__animated animate__fadeInUp">
+                        <h4>Weather in <%= weatherData.name %>
+                        </h4>
+                        <p>Temperature: <strong>
+                                <%= weatherData.main.temp %>°
+                            </strong></p>
+                        <p>Weather: <strong>
+                                <%= weatherData.weather[0].description %>
+                            </strong></p>
+                    </div>
+                    <% } %>
+            </div>
+        </div>
+    </div>

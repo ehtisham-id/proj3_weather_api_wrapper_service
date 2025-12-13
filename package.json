@@ -23,7 +23,6 @@
     "helmet": "^8.1.0",
     "http-errors": "~1.6.3",
     "ioredis": "^5.8.2",
-    "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.1",
     "morgan": "^1.10.1",

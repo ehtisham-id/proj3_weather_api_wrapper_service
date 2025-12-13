@@ -8,11 +8,11 @@ const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 const PORT = process.env.PORT || 3000;
 
 connectDB();
-redisClient.connect().then(() => {
-  logger.info('Connected to Redis');
-}).catch((err) => {
-  logger.error('Redis connection error:', err);
-});
+// redisClient.connect().then(() => {
+//   logger.info('Connected to Redis');
+// }).catch((err) => {
+//   logger.error('Redis connection error:', err);
+// });
 
 app.listen(PORT, () => {
   logger.info(`Server is running on port ${PORT}`);

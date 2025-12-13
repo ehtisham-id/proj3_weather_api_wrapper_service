@@ -1,11 +1,743 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
-</html>
+<%- include('partials/header', { title: 'Weather' }) %>
+
+    <style>
+        .weather-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .weather-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .weather-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        }
+
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.2s ease;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.active {
+            background: #f8fafc;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .form-control,
+        .form-select {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .weather-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .weather-result {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .current-weather-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .temperature-display {
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .weather-icon {
+            font-size: 3rem;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .hourly-forecast {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 0;
+            gap: 15px;
+            scrollbar-width: thin;
+        }
+
+        .hourly-card {
+            min-width: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .hourly-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .hourly-temp {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .hourly-time {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <div class="weather-hero">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-md-10 col-sm-12 animate__animated animate__fadeInUp">
+                    <div class="weather-card p-4 p-md-5">
+                        <div class="text-center mb-5">
+                            <div class="weather-icon mb-3">🌤️</div>
+                            <h1 class="h2 fw-bold text-dark mb-2">Weather Forecast</h1>
+                            <p class="text-muted lead">Search cities worldwide with smart autocomplete</p>
+                        </div>
+
+                        <form id="weatherForm" action="/" method="POST">
+                            <div class="autocomplete-container mb-4">
+                                <div class="form-floating">
+                                    <input type="text" name="city" id="cityInput" class="form-control"
+                                        placeholder="Enter city name" required autocomplete="off">
+                                    <label for="cityInput">🌍 City Name</label>
+                                </div>
+                                <div id="citySuggestions" class="autocomplete-suggestions"></div>
+                            </div>
+
+                            <div class="form-floating mb-4">
+                                <select name="country" id="countrySelect" class="form-select" required>
+                                    <option value="">🌐 Select Country</option>
+                                    <option value="US">🇺🇸 United States</option>
+                                    <option value="GB">🇬🇧 United Kingdom</option>
+                                    <option value="CA">🇨🇦 Canada</option>
+                                    <option value="AU">🇦🇺 Australia</option>
+                                    <option value="PK">🇵🇰 Pakistan</option>
+                                    <option value="IN">🇮🇳 India</option>
+                                    <option value="DE">🇩🇪 Germany</option>
+                                    <option value="FR">🇫🇷 France</option>
+                                    <option value="JP">🇯🇵 Japan</option>
+                                    <option value="BR">🇧🇷 Brazil</option>
+                                    <option value="RU">🇷🇺 Russia</option>
+                                    <option value="CN">🇨🇳 China</option>
+                                    <option value="MX">🇲🇽 Mexico</option>
+                                    <option value="IT">🇮🇹 Italy</option>
+                                    <option value="ES">🇪🇸 Spain</option>
+                                </select>
+                                <label for="countrySelect">Country</label>
+                            </div>
+
+                            <div class="form-floating mb-4">
+                                <select name="units" id="unitsSelect" class="form-select">
+                                    <option value="metric" selected>🌡️ Celsius (°C)</option>
+                                    <option value="imperial">🌡️ Fahrenheit (°F)</option>
+                                    <option value="standard">🌡️ Kelvin (K)</option>
+                                </select>
+                                <label for="unitsSelect">Temperature Units</label>
+                            </div>
+
+                            <button type="submit" class="weather-btn w-100 text-white mb-4" id="submitBtn">
+                                <span id="btnText">🔍 Get Weather</span>
+                                <div id="loadingSpinner" class="loading spinner"></div>
+                            </button>
+                        </form>
+
+                        <% if (weather && weather.latitude) { %>
+                            <div class="weather-result p-4 animate__animated animate__fadeInUp">
+                                <!-- Current Weather -->
+                                <div class="current-weather-card">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6 text-center">
+                                            <div class="temperature-display">
+                                                <% if (weather.current && weather.current.temperature_2m) { %>
+                                                    <%= weather.current.temperature_2m %>°
+                                                        <% if (weather.current_units &&
+                                                            weather.current_units.temperature_2m) { %>
+                                                            <%= weather.current_units.temperature_2m %>
+                                                                <% } %>
+                                                                    <% } else { %>
+                                                                        N/A
+                                                                        <% } %>
+                                            </div>
+                                            <div class="weather-icon mt-3">
+                                                <% let icon='🌤️' ; let temp=20; // Default temperature if
+                                                    (weather.current && weather.current.temperature_2m) {
+                                                    temp=weather.current.temperature_2m; } else if (weather.hourly &&
+                                                    weather.hourly.temperature_2m &&
+                                                    weather.hourly.temperature_2m.length> 0) {
+                                                    // Use first hourly temperature if current is not available
+                                                    temp = weather.hourly.temperature_2m[0];
+                                                    }
+
+                                                    if (temp < 0) icon='❄️' ; else if (temp < 10) icon='☁️' ; else if
+                                                        (temp < 25) icon='⛅' ; else icon='☀️' ; %>
+                                                        <%= icon %>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h4 class="fw-bold text-primary mb-3">
+                                                Current Weather
+                                            </h4>
+                                            <p class="mb-2">
+                                                <strong>Time:</strong>
+                                                <% if (weather.current && weather.current.time) { %>
+                                                    <%= new Date(weather.current.time).toLocaleString() %>
+                                                        <% } else { %>
+                                                            N/A
+                                                            <% } %>
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Wind Speed:</strong>
+                                                <% if (weather.current && weather.current.wind_speed_10m) { %>
+                                                    <%= weather.current.wind_speed_10m %>
+                                                        <% if (weather.current_units &&
+                                                            weather.current_units.wind_speed_10m) { %>
+                                                            <%= weather.current_units.wind_speed_10m %>
+                                                                <% } %>
+                                                                    <% } else { %>
+                                                                        N/A
+                                                                        <% } %>
+                                            </p>
+                                            <p class="mb-0">
+                                                <strong>Timezone:</strong>
+                                                <% if (weather.timezone) { %>
+                                                    <%= weather.timezone %>
+                                                        <% } else { %>
+                                                            N/A
+                                                            <% } %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Stats Grid -->
+                                <div class="stats-grid">
+                                    <div class="stat-card">
+                                        <div class="stat-value">
+                                            <% if (weather.hourly && weather.hourly.temperature_2m &&
+                                                weather.hourly.temperature_2m.length> 0) { %>
+                                                <%= Math.min(...weather.hourly.temperature_2m).toFixed(1) %>°
+                                                    <% } else { %>
+                                                        N/A
+                                                        <% } %>
+                                        </div>
+                                        <div class="stat-label">Min Temp</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-value">
+                                            <% if (weather.hourly && weather.hourly.temperature_2m &&
+                                                weather.hourly.temperature_2m.length> 0) { %>
+                                                <%= Math.max(...weather.hourly.temperature_2m).toFixed(1) %>°
+                                                    <% } else { %>
+                                                        N/A
+                                                        <% } %>
+                                        </div>
+                                        <div class="stat-label">Max Temp</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-value">
+                                            <% if (weather.hourly && weather.hourly.temperature_2m &&
+                                                weather.hourly.temperature_2m.length> 0) { %>
+                                                <%= (weather.hourly.temperature_2m.reduce((a, b)=> a + b) /
+                                                    weather.hourly.temperature_2m.length).toFixed(1) %>°
+                                                    <% } else { %>
+                                                        N/A
+                                                        <% } %>
+                                        </div>
+                                        <div class="stat-label">Avg Temp</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-value">
+                                            <% if (weather.hourly && weather.hourly.wind_speed_10m &&
+                                                weather.hourly.wind_speed_10m.length> 0) { %>
+                                                <%= Math.max(...weather.hourly.wind_speed_10m).toFixed(1) %>
+                                                    <% } else { %>
+                                                        N/A
+                                                        <% } %>
+                                        </div>
+                                        <div class="stat-label">Max Wind</div>
+                                    </div>
+                                </div>
+
+                                <!-- Temperature Chart -->
+                                <% if (weather.hourly && weather.hourly.temperature_2m &&
+                                    weather.hourly.temperature_2m.length> 0) { %>
+                                    <div class="chart-container">
+                                        <h5 class="fw-bold mb-4">24-Hour Temperature Forecast</h5>
+                                        <div class="chart-wrapper">
+                                            <canvas id="temperatureChart" height="150"></canvas>
+                                        </div>
+                                    </div>
+                                    <% } %>
+
+                                        <!-- Humidity Chart -->
+                                        <% if (weather.hourly && weather.hourly.relative_humidity_2m &&
+                                            weather.hourly.relative_humidity_2m.length> 0) { %>
+                                            <div class="chart-container">
+                                                <h5 class="fw-bold mb-4">24-Hour Humidity Forecast</h5>
+                                                <div class="chart-wrapper">
+                                                    <canvas id="humidityChart" height="150"></canvas>
+                                                </div>
+                                            </div>
+                                            <% } %>
+
+                                                <!-- Hourly Forecast -->
+                                                <% if (weather.hourly && weather.hourly.time &&
+                                                    weather.hourly.time.length> 0) { %>
+                                                    <div class="chart-container">
+                                                        <h5 class="fw-bold mb-4">Hourly Forecast</h5>
+                                                        <div class="hourly-forecast">
+                                                            <% const hourlyCount=Math.min(24,
+                                                                weather.hourly.time.length); for(let i=0; i <
+                                                                hourlyCount; i++) { %>
+                                                                <div class="hourly-card">
+                                                                    <div class="hourly-time">
+                                                                        <% const date=new Date(weather.hourly.time[i]);
+                                                                            const hours=date.getHours(); const
+                                                                            ampm=hours>= 12 ? 'PM' : 'AM';
+                                                                            const displayHour = hours % 12 || 12;
+                                                                            %>
+                                                                            <%= displayHour %>
+                                                                                <%= ampm %>
+                                                                    </div>
+                                                                    <div class="hourly-temp">
+                                                                        <% if (weather.hourly.temperature_2m &&
+                                                                            weather.hourly.temperature_2m[i]
+                                                                            !==undefined) { %>
+                                                                            <%= weather.hourly.temperature_2m[i] %>°
+                                                                                <% } else { %>
+                                                                                    N/A
+                                                                                    <% } %>
+                                                                    </div>
+                                                                    <div class="hourly-humidity">
+                                                                        <% if (weather.hourly.relative_humidity_2m &&
+                                                                            weather.hourly.relative_humidity_2m[i]
+                                                                            !==undefined) { %>
+                                                                            <%= weather.hourly.relative_humidity_2m[i]
+                                                                                %>%
+                                                                                <% } else { %>
+                                                                                    N/A
+                                                                                    <% } %>
+                                                                    </div>
+                                                                    <div class="hourly-wind mt-2">
+                                                                        <% if (weather.hourly.wind_speed_10m &&
+                                                                            weather.hourly.wind_speed_10m[i]
+                                                                            !==undefined) { %>
+                                                                            <small>
+                                                                                <%= weather.hourly.wind_speed_10m[i] %>
+                                                                                    km/h
+                                                                            </small>
+                                                                            <% } else { %>
+                                                                                <small>N/A</small>
+                                                                                <% } %>
+                                                                    </div>
+                                                                </div>
+                                                                <% } %>
+                                                        </div>
+                                                    </div>
+                                                    <% } %>
+
+                                                        <!-- Location Info -->
+                                                        <div class="chart-container">
+                                                            <h5 class="fw-bold mb-4">Location Information</h5>
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <p><strong>Coordinates:</strong>
+                                                                        <% if (weather.latitude && weather.longitude) {
+                                                                            %>
+                                                                            <%= weather.latitude.toFixed(4) %>°N,
+                                                                                <%= weather.longitude.toFixed(4) %>°E
+                                                                                    <% } else { %>
+                                                                                        N/A
+                                                                                        <% } %>
+                                                                    </p>
+                                                                    <p><strong>Elevation:</strong>
+                                                                        <% if (weather.elevation) { %>
+                                                                            <%= weather.elevation %> meters
+                                                                                <% } else { %>
+                                                                                    N/A
+                                                                                    <% } %>
+                                                                    </p>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <p><strong>Timezone:</strong>
+                                                                        <% if (weather.timezone) { %>
+                                                                            <%= weather.timezone %>
+                                                                                <% } else { %>
+                                                                                    N/A
+                                                                                    <% } %>
+                                                                    </p>
+                                                                    <p><strong>Timezone Abbreviation:</strong>
+                                                                        <% if (weather.timezone_abbreviation) { %>
+                                                                            <%= weather.timezone_abbreviation %>
+                                                                                <% } else { %>
+                                                                                    N/A
+                                                                                    <% } %>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                            </div>
+                            <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const cityInput = document.getElementById('cityInput');
+            const suggestionsContainer = document.getElementById('citySuggestions');
+            const form = document.getElementById('weatherForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const countrySelect = document.getElementById('countrySelect');
+
+            // Country-specific autocomplete API endpoint
+            async function fetchSuggestions(query, country) {
+                if (!query || query.length < 2) {
+                    suggestionsContainer.style.display = 'none';
+                    return;
+                }
+
+                try {
+                    const countryCode = countrySelect.value || country || '';
+                    const url = `https://api.api-ninjas.com/v1/geocoding?city=${encodeURIComponent(query)}${countryCode ? `&country=${countryCode}` : ''}`;
+
+                    const response = await fetch(url, {
+                        headers: {
+                            'X-Api-Key': 'YOUR_API_NINJAS_KEY'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        displaySuggestions(data);
+                    }
+                } catch (error) {
+                    console.error('Autocomplete error:', error);
+                }
+            }
+
+            function displaySuggestions(suggestions) {
+                suggestionsContainer.innerHTML = '';
+
+                if (suggestions.length === 0) {
+                    suggestionsContainer.style.display = 'none';
+                    return;
+                }
+
+                suggestions.slice(0, 8).forEach((place, index) => {
+                    const suggestion = document.createElement('div');
+                    suggestion.className = 'suggestion-item';
+                    suggestion.innerHTML = `
+                    <div><strong>${place.name}</strong></div>
+                    <small class="text-muted">${place.country}, ${place.state || 'N/A'}</small>
+                `;
+                    suggestion.addEventListener('click', () => selectSuggestion(place));
+                    suggestionsContainer.appendChild(suggestion);
+                });
+
+                suggestionsContainer.style.display = 'block';
+            }
+
+            function selectSuggestion(place) {
+                cityInput.value = place.name;
+                suggestionsContainer.style.display = 'none';
+            }
+
+            // Input event listeners
+            cityInput.addEventListener('input', function () {
+                const query = this.value.trim();
+                const country = countrySelect.value;
+                fetchSuggestions(query, country);
+            });
+
+            countrySelect.addEventListener('change', function () {
+                if (cityInput.value.trim()) {
+                    fetchSuggestions(cityInput.value.trim(), this.value);
+                }
+            });
+
+            // Hide suggestions on outside click
+            document.addEventListener('click', function (e) {
+                if (!cityInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                    suggestionsContainer.style.display = 'none';
+                }
+            });
+
+            // Form submission with loading state
+            form.addEventListener('submit', function () {
+                submitBtn.disabled = true;
+                btnText.style.display = 'none';
+                loadingSpinner.style.display = 'block';
+            });
+
+        // Initialize charts if weather data exists
+        <% if (weather && weather.latitude && weather.hourly && weather.hourly.temperature_2m) { %>
+            // Temperature Chart
+            const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+                const tempLabels = [];
+                const tempDataPoints = weather.hourly.temperature_2m.slice(0, 24);
+
+                for (let i = 0; i < tempDataPoints.length; i++) {
+                    tempLabels.push(`${i}:00`);
+                }
+
+                new Chart(tempCtx, {
+                    type: 'line',
+                    data: {
+                        labels: tempLabels,
+                        datasets: [{
+                            label: 'Temperature (°C)',
+                            data: tempDataPoints,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+
+            // Humidity Chart
+            <% if (weather.hourly.relative_humidity_2m) { %>
+                const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+                    const humidityData = weather.hourly.relative_humidity_2m.slice(0, 24);
+
+                    new Chart(humidityCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: tempLabels,
+                            datasets: [{
+                                label: 'Humidity (%)',
+                                data: humidityData,
+                                backgroundColor: 'rgba(118, 75, 162, 0.3)',
+                                borderColor: 'rgba(118, 75, 162, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+            <% } %>
+
+                    // Add animation to hourly cards
+                    document.querySelectorAll('.hourly-card').forEach((card, index) => {
+                        card.style.animationDelay = `${index * 0.1}s`;
+                        card.classList.add('animate__animated', 'animate__fadeInUp');
+                    });
+        <% } %>
+    });
+    </script>
+
+    <%- include('partials/footer') %>

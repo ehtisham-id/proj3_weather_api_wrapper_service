@@ -3,7 +3,7 @@ import pino from 'pino';
 
 const logger = pino();
 
-export const connectDB = async () => {
+const connectDB = async () => {
     while (true) {
         try {
             await mongoose.connect(process.env.MONGO_URI);
@@ -16,3 +16,5 @@ export const connectDB = async () => {
         }
     }
 };
+
+export default connectDB;

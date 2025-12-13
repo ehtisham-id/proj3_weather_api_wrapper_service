@@ -1,4 +1,4 @@
-<% layout('layout', { title: 'Admin Panel' , user }) %>
+<%- include('partials/header', { title: 'Admin Panel' }) %>
 
     <h2 class="mb-4 animate__animated animate__fadeInDown">Admin Panel</h2>
 
@@ -26,3 +26,5 @@
                 <% }) %>
         </tbody>
     </table>
+
+    <%- include('partials/footer') %>

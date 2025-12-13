@@ -1,13 +1,16 @@
-import ApiKey from '../models/apiKey.model.js';
+import { ApiKey } from '../models/ApiKey.js';
+import pino from 'pino';
 
-module.exports = async function apiKeyAuth(req, res, next) {
+const logger = pino();
+
+export default async function apiKeyAuth(req, res, next) {
     try {
         const apiKey = req.header('x-api-key');
         if (!apiKey) {
             return res.status(401).json({ message: 'API key is missing' });
         }
 
-        if (!/^wapi_[a-f0-9]{64}$/i.test(apiKey)) { 
+        if (!/^wapi_[a-f0-9]{64}$/i.test(apiKey)) {
             return res.status(400).json({ message: 'Invalid API key format' });
         }
 
@@ -16,7 +19,7 @@ module.exports = async function apiKeyAuth(req, res, next) {
             return res.status(401).json({ message: 'Invalid API key' });
         }
 
-        if (!keyRecord.active) {
+        if (!keyRecord.isActive) {
             return res.status(403).json({ message: 'API key is inactive' });
         }
 

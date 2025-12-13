@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title || 'WeatherApp' %>
+    </title>
+
+    <!-- CDN Links -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+
+<body class="bg-gradient">
+    <!-- Animated Background Elements -->
+    <div class="weather-bg-overlay"></div>
+
+    <!-- Animated Background Particles -->
+    <div class="particles-container" id="particles-js"></div>
+
+    <!-- Animated Cloud Elements -->
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <div class="cloud cloud-4"></div>
+
+    <!-- Enhanced Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-glow animate__animated animate__fadeInDown">
+        <div class="container">
+            <!-- Animated Logo -->
+            <a class="navbar-brand fw-bold fs-3 brand-gradient logo-container" href="/" id="logo">
+                <i class="fas fa-cloud-sun me-2 logo-icon"></i>
+                <span class="logo-text">WeatherApp</span>
+                <span class="logo-dot">.</span>
+            </a>
+
+            <!-- Animated Toggle Button -->
+            <button class="navbar-toggler border-0 shadow-sm nav-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+                <span class="nav-toggler-circle"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <% if (typeof user !=='undefined' && user) { %>
+                        <!-- User Dropdown with Enhanced Animation -->
+                        <li class="nav-item dropdown mx-2">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center nav-link-hover p-2 rounded-pill profile-dropdown-toggle user-menu"
+                                href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="userMenu">
+                                <% if (typeof user.avatar !=='undefined' && user.avatar) { %>
+                                    <div class="avatar-wrapper">
+                                        <img src="<%= user.avatar %>" alt="Profile"
+                                            class="profile-avatar me-2 avatar-img">
+                                        <div class="avatar-ring"></div>
+                                    </div>
+                                    <% } else { %>
+                                        <div class="avatar-wrapper">
+                                            <i class="fas fa-user-circle fa-2x me-2 text-white avatar-icon"></i>
+                                            <div class="avatar-ring"></div>
+                                        </div>
+                                        <% } %>
+                                            <span class="d-none d-md-inline fw-semibold user-name">
+                                                <%= typeof user.name !=='undefined' ? user.name : (typeof user.email
+                                                    !=='undefined' ? user.email : 'User' ) %>
+                                            </span>
+                                            <i class="fas fa-chevron-down ms-1 chevron-animate dropdown-arrow"></i>
+
+                                            <!-- Online Status Indicator -->
+                                            <span class="online-status"></span>
+                            </a>
+
+                            <!-- Enhanced Dropdown Menu -->
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 profile-dropdown-menu animate__animated"
+                                aria-labelledby="userMenu">
+                                <li>
+                                    <a class="dropdown-item fw-semibold border-bottom profile-item dashboard-link"
+                                        href="/dashboard">
+                                        <div class="menu-icon-container">
+                                            <i class="fas fa-tachometer-alt me-2"></i>
+                                        </div>
+                                        <span>Dashboard</span>
+                                        <i class="fas fa-arrow-right ms-auto menu-arrow"></i>
+                                    </a>
+                                </li>
+                                <% if (typeof user.isAdmin !=='undefined' && user.isAdmin) { %>
+                                    <li>
+                                        <a class="dropdown-item fw-semibold profile-item admin-link" href="/admin">
+                                            <div class="menu-icon-container">
+                                                <i class="fas fa-crown me-2 text-warning"></i>
+                                            </div>
+                                            <span>Admin Panel</span>
+                                            <i class="fas fa-shield-alt ms-auto menu-arrow"></i>
+                                        </a>
+                                    </li>
+                                    <% } %>
+                                        <li>
+                                            <hr class="dropdown-divider my-1 menu-divider">
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item profile-item profile-link" href="/profile">
+                                                <div class="menu-icon-container">
+                                                    <i class="fas fa-user me-2"></i>
+                                                </div>
+                                                <span>Profile</span>
+                                                <i class="fas fa-cog ms-auto menu-arrow"></i>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item btn-logout-item profile-item logout-link"
+                                                href="/logout">
+                                                <div class="menu-icon-container">
+                                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                                </div>
+                                                <span>Logout</span>
+                                                <i class="fas fa-power-off ms-auto menu-arrow"></i>
+                                            </a>
+                                        </li>
+                            </ul>
+                        </li>
+                        <% } else { %>
+                            <!-- Guest Menu with Enhanced Animation -->
+                            <li class="nav-item dropdown mx-2">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center nav-link-hover p-2 rounded-pill profile-dropdown-toggle guest-menu"
+                                    href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                    id="guestMenu">
+                                    <div class="avatar-wrapper">
+                                        <i class="fas fa-user-circle fa-2x text-white avatar-icon"></i>
+                                        <div class="avatar-ring"></div>
+                                    </div>
+                                    <span class="d-none d-md-inline fw-semibold guest-text">Account</span>
+                                    <i class="fas fa-chevron-down ms-1 chevron-animate dropdown-arrow"></i>
+                                </a>
+
+                                <!-- Guest Dropdown Menu -->
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 profile-dropdown-menu animate__animated"
+                                    aria-labelledby="guestMenu">
+                                    <li>
+                                        <a class="dropdown-item fw-semibold border-bottom profile-item login-link"
+                                            href="/login">
+                                            <div class="menu-icon-container">
+                                                <i class="fas fa-sign-in-alt me-2"></i>
+                                            </div>
+                                            <span>Login</span>
+                                            <i class="fas fa-key ms-auto menu-arrow"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item fw-semibold profile-item btn-signup signup-link"
+                                            href="/signup">
+                                            <div class="menu-icon-container">
+                                                <i class="fas fa-user-plus me-2"></i>
+                                            </div>
+                                            <span>Sign Up</span>
+                                            <i class="fas fa-rocket ms-auto menu-arrow"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <% } %>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Notification Bell -->
+        <div class="notification-bell" id="notificationBell">
+            <i class="fas fa-bell"></i>
+            <span class="notification-count">0</span>
+            <div class="notification-pulse"></div>
+        </div>
+    </nav>
+
+    <div class="container my-5 pt-5 main-content">

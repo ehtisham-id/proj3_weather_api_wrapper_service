@@ -1,6 +1,6 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model.js';
+import User from '../models/User.js';
 
 const register = async (email, password) => {
   const existingUser = await User.findOne({ email });
@@ -30,4 +30,4 @@ const login = async (email, password) => {
   return { user, token };
 };
 
-module.exports = { register, login };
+export default { register, login };

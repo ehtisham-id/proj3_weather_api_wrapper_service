@@ -1,9 +1,11 @@
-import User from '../models/user.model.js';
+import User from '../models/User.js';
 import pino from 'pino';
 
-exports.showAdminPanel = async (req, res,) => {
+const logger = pino();
+
+export const showAdminPanel = async (req, res) => {
     try {
-        const users = await User.find().select('email apiKey createdAt');
+        const users = await User.find().select('email createdAt');
         res.render('admin', { users });
     } catch (err) {
         logger.error(`Error fetching users for admin panel: ${err.message}`);

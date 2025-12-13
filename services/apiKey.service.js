@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import User from '../models/user.model.js';
+import User from '../models/User.js';
 
 const generateApiKey = () => 'wapi_' + crypto.randomBytes(32).toString('hex');
 
@@ -9,4 +9,4 @@ const assignApiKeyToUser = async (userId) => {
     return apiKey;
 };
 
-module.exports = { generateApiKey, assignApiKeyToUser };
+export default { generateApiKey, assignApiKeyToUser };

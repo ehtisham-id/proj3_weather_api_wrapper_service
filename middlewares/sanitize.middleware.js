@@ -1,4 +1,4 @@
-const { body, query } = require('express-validator');
+import { body, query } from 'express-validator';
 
 function sanitizeInput() {
   return [
@@ -13,4 +13,4 @@ function sanitizeQuery() {
   ];
 }
 
-module.exports = { sanitizeInput, sanitizeQuery };
+export { sanitizeInput, sanitizeQuery };

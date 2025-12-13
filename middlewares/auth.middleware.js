@@ -1,9 +1,8 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/user');
-const { AppError } = require('../utils/errors');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 // Protect routes
-exports.authMiddleware = async (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
     try {
         let token;
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -29,8 +28,8 @@ exports.authMiddleware = async (req, res, next) => {
 };
 
 // Admin only middleware
-exports.adminMiddleware = (req, res, next) => {
-    if (!req.user || !req.user.isAdmin) {
+export const adminMiddleware = (req, res, next) => {
+    if (!req.user || req.user.role !== 'admin') {
         return res.status(403).send('Access Denied: Admins Only');
     }
     next;

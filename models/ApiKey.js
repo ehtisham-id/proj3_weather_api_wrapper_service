@@ -28,10 +28,13 @@ const apiKeySchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-apiKeySchema.methods.incrementUsage = function() {
+apiKeySchema.methods.incrementUsage = function () {
     this.usageCount += 1;
     this.lastUsed = new Date();
     return this.save();
 }
 
-export const ApiKey = mongoose.model('ApiKey', apiKeySchema);
+const ApiKey = mongoose.model('ApiKey', apiKeySchema);
+
+export { ApiKey };
+export default ApiKey;

@@ -1,0 +1,31 @@
+</main>
+
+<footer
+    style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 2rem 0; margin-top: 4rem; text-align: center; color: var(--gray);">
+    <p>&copy; 2024 Weather API Service. All rights reserved.</p>
+</footer>
+
+<script>
+    // Auto-dismiss alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', () => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.animation = 'slideOut 0.5s ease-out';
+                setTimeout(() => alert.remove(), 500);
+            }, 5000);
+        });
+    });
+
+    // Add slideOut animation
+    const slideOutStyle = document.createElement('style');
+    slideOutStyle.textContent = `
+            @keyframes slideOut {
+                to { transform: translateX(-100%); opacity: 0; }
+            }
+        `;
+    document.head.appendChild(slideOutStyle);
+</script>
+</body>
+
+</html>

@@ -1,7 +1,7 @@
-import User from 'models/user.model.js';
-import Token from 'models/token.model.js';
-import bcrypt from 'bcrypt';
-import generateToken from 'utils/jwt.util.js';
+import User from '../models/User.js';
+import Token from '../models/Token.js';
+import bcrypt from 'bcryptjs';
+import generateToken from '../utils/jwt.util.js';
 
 const loginController = async (req, res) => {
     try {
@@ -21,8 +21,13 @@ const loginController = async (req, res) => {
 
         await userToken.save();
 
-        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); 
-        await Session.create({ user: user._id, token, expiresAt });
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+        res.cookie("sessionToken", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            expires: expiresAt
+        });
 
         res.json({ token });
     } catch (error) {
@@ -31,15 +36,14 @@ const loginController = async (req, res) => {
 }
 
 const registerController = async (req, res) => {
-    const { email, password } = req.body;
-
-    if (await User.findOne({ email })) {
-        return res.status(400).json({ message: 'User already exists' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ email, password: hashedPassword });
     try {
+        const { email, password } = req.body;
+
+        if (await User.findOne({ email })) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        const newUser = new User({ email, password });
         await newUser.save();
         return res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {

@@ -1,33 +1,35 @@
-import bcrypt from 'bcrypt';
-import Token from 'models/Token.js';
+import jwt from 'jsonwebtoken';
+import Token from '../models/Token.js';
 
-export const jwtAuth = async (req, res, next) => {
+const jwtAuth = async (req, res, next) => {
     try {
-        const jwtToken = req.header("Authorization");
+        const authHeader = req.header("Authorization");
+        const token = authHeader?.startsWith("Bearer ")
+            ? authHeader.slice(7).trim()
+            : authHeader?.trim() || req.cookies.sessionToken;
 
-        if (!jwtToken) {
-            return res.status(401).json({ error: "API key missing" });
+        if (!token) return res.status(401).json({ error: "Token missing" });
+
+        //Split token into UUID + JWT
+        const [id, jwtToken] = token.split(':');
+        if (!id || !jwtToken) return res.status(401).json({ error: "Invalid token format" });
+
+        //Verify JWT
+        try {
+            await jwt.verify(jwtToken, process.env.JWT_SECRET);
+        } catch {
+            return res.status(401).json({ error: "Invalid JWT" });
         }
 
-        const token = jwtToken.startsWith('Bearer ')
-            ? jwtToken.slice(7).trim()
-            : jwtToken.trim();
+        //Check token exists in DB
+        const storedToken = await Token.findOne({ id, token: jwtToken });
+        if (!storedToken) return res.status(401).json({ error: "Token not found in DB" });
 
-        const [id, tokenSecret] = token.split(":");
-
-        const storedToken = await Token.findOne({ id });
-
-        if (!storedToken) {
-            return res.status(401).json({ error: "Invalid API key" });
-        }
-
-        const decoded = await jwt.verify(tokenSecret, process.env.JWT_SECRET);
-
-        if(!decoded || decoded.id !== id) {
-            return res.status(401).json({ error: "Invalid API key" });
-        }
-        next;
+        req.user = storedToken.user;
+        next();
     } catch (err) {
-        res.status(500).json({ error: "Server error" });
+        return res.status(500).json({ error: "Server error", details: err.message });
     }
 };
+
+export default jwtAuth;

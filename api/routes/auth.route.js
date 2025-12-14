@@ -1,6 +1,6 @@
-import authController from 'controllers/auth.controller.js';
-import validateRequest from 'middlewares/requestAuth.middleware.js';
-import { registerValidation, loginValidation } from 'utils/validator.util.js';
+import authController from '../controllers/auth.controller.js';
+import validateRequest from '../middlewares/requestAuth.middleware.js';
+import { registerValidation, loginValidation } from '../utils/validator.util.js';
 
 import express from 'express';
 

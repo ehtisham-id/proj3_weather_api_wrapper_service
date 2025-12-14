@@ -1,6 +1,6 @@
 import app from '../app.js';
-import connectDB from '../config/database.config.js';
-import redisClient from '../config/redis.config.js';
+import connectDB from '../api/config/database.config.js';
+//import redisClient from '../config/redis.config.js';
 import pino from 'pino';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });

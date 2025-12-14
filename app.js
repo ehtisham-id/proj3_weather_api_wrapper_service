@@ -6,7 +6,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { configDotenv } from "dotenv";
 
-import indexRouter from "./routes/index.js";
+//import indexRouter from "./routes/index.js";
 import apiRouter from "./api/index.js";
 
 configDotenv();
@@ -38,7 +38,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(path.resolve(), 'views'));
 
 
-app.use("/", indexRouter);
+//app.use("/", indexRouter);
 app.use("/api", apiRouter);
 
 

@@ -1,7 +1,7 @@
-import weatherController from 'controllers/weather.controller.js';
+import weatherController from '../controllers/weather.controller.js';
 import express from 'express';
 
-import apiAuth from 'middlewares/apiAuth.middleware.js';
+import apiAuth from '../middlewares/apiAuth.middleware.js';
 
 const weatherRouter = express.Router();
 

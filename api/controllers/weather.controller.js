@@ -1,7 +1,7 @@
-import weatherService from 'services/weather.service.js';
+import weatherService from '../services/weather.service.js';
 
 const getWeatherController = async (req, res) => {
-    const { lan, lot, city, country } = req.query;
+    const { lat, lon, city, country } = req.query;
     let weatherData = null;
     try {
         if (lat && lon) {

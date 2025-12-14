@@ -1,7 +1,7 @@
-import bcrypt from "bcrypt";
-import ApiKey from "./models/ApiKey.js";
+import bcrypt from "bcryptjs";
+import ApiKey from "../models/ApiKey.js";
 
-export const apiAuth = async (req, res, next) => {
+const apiAuth = async (req, res, next) => {
     try {
         const apiKey = req.header("x-api-key");
 
@@ -22,8 +22,10 @@ export const apiAuth = async (req, res, next) => {
         if (!isValid) {
             return res.status(401).json({ error: "Invalid API key" });
         }
-        next;
+        next();
     } catch (err) {
         res.status(500).json({ error: "Server error" });
     }
 };
+
+export default apiAuth;

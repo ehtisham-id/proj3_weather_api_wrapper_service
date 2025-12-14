@@ -1,9 +1,9 @@
-import redisClient from '../config/redis.config.js';
+import redisClient from '../config/cache.config.js';
 import pino from 'pino';
 
 const logger = pino();
 
-const get = async (key) => {
+const getCache = async (key) => {
     try {
         const value = await redisClient.get(key);
         return value ? JSON.parse(value) : null;
@@ -13,16 +13,16 @@ const get = async (key) => {
     }
 }
 
-const set = async (key, value, expirationInSeconds) => {
+const setCache = async (key, value, expirationInSeconds=process.env.CACHE_EXPIRATION_SECONDS) => {
     try {
         await redisClient.set(key, JSON.stringify(value), 'EX', expirationInSeconds);
     } catch (error) {
         logger.error(`Error setting cache for key ${key}: ${error.message}`);
-    }
+    }   
 }
 
-const getCacheKey = (location, type = 'current', units = 'metric') => {
-    return `weather:${type}:${location.toLowerCase()}:${units}`;
+const getCacheKey = (latitude, longitude, type = 'current') => {
+    return `weather:${type}:${latitude}:${longitude}`;
 };
 
-module.exports = { get, set, getCacheKey };
+export default {getCache , setCache , getCacheKey};

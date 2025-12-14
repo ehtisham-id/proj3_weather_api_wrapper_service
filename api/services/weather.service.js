@@ -1,10 +1,25 @@
 import axios from 'axios';
 import pino from 'pino';
+import cacheService from './cache.service.js ';
 
 const logger = pino();
 
-const getWeatherByLatLon = async (latitude, longitude, city=null, country=null) => {
+const CACHE_TTL = {
+    current: 1800,    // 30 minutes
+    hourly: 3600,     // 1 hour
+    geocoding: 86400  // 24 hours
+};
+
+const getWeatherByLatLon = async (latitude, longitude, city = null, country = null) => {
     try {
+
+        const cacheKey = cacheService.getCacheKey(latitude, longitude, 'current');
+        const cachedData = await cacheService.getCache(cacheKey);
+        if (cachedData) {
+            logger.info(`Cache hit for key: ${cacheKey}`);
+            return cachedData;
+        }
+
         const url = `https://api.open-meteo.com/v1/forecast
             ?latitude=${latitude}
             &longitude=${longitude}
@@ -20,8 +35,8 @@ const getWeatherByLatLon = async (latitude, longitude, city=null, country=null) 
             location: {
                 latitude: data.latitude,
                 longitude: data.longitude,
-                city: city || null, 
-                country: country|| null,
+                city: city || null,
+                country: country || null,
                 timezone: data.timezone,
                 elevation: data.elevation
             },
@@ -39,6 +54,10 @@ const getWeatherByLatLon = async (latitude, longitude, city=null, country=null) 
                 windSpeed: data.hourly.windspeed_10m[index]
             }))
         };
+
+        // ---- CACHE THE RESULT ---- //
+        await cacheService.setCache(cacheKey, apiData, CACHE_TTL.current);
+        logger.info(`Cache set for key: ${cacheKey} with TTL: ${CACHE_TTL.current} seconds`);
 
         return apiData;
 

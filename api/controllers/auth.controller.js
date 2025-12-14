@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import Token from '../models/Token.js';
 import bcrypt from 'bcryptjs';
 import generateToken from '../utils/jwt.util.js';
+import sendEmail from '../services/email.service.js';
 
 const loginController = async (req, res) => {
     try {
@@ -45,6 +46,8 @@ const registerController = async (req, res) => {
 
         const newUser = new User({ email, password });
         await newUser.save();
+        //This line will be changed later to send a verification email
+        sendEmail();
         return res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         return res.status(500).json({ message: 'Internal server error', error: error.message });

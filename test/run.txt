@@ -1,0 +1,4 @@
+npm test                 # Run all tests
+npm test -- auth        # Run specific test file
+npm test -- --coverage  # Run with coverage report
+npm test -- --watch  

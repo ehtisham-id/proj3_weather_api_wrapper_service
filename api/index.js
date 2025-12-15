@@ -2,6 +2,7 @@ import express from 'express';
 import apiRoutes from './routes/index.route.js';
 import connectDB from './config/database.config.js';
 import redisClient from './config/cache.config.js';
+import cors from 'cors';
 
 import { ipRateLimiter } from './middlewares/rateLimiter.middleware.js';
 
@@ -18,6 +19,7 @@ redisClient.connect().then(() => {
 });
 
 router.use(express.json());
+
 router.use('/v1', ipRateLimiter, apiRoutes);
 
 export default router;

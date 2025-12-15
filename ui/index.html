@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard | API Dashboard</title>
+
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/weather-icons/css/weather-icons.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="weather.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-cloud-sun"></i>
+                <h1>Weather Dashboard</h1>
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-home"></i> API Dashboard
+                </a>
+                <a href="index.html" class="nav-link active">
+                    <i class="fas fa-cloud-sun"></i> Weather
+                </a>
+                <button class="refresh-btn" id="refreshWeather">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </nav>
+
+        <!-- Weather Search Section -->
+        <div class="search-section card">
+            <h2><i class="fas fa-search"></i> Search Weather</h2>
+            <div class="search-form">
+                <div class="method-selector">
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="searchMethod" value="city" checked>
+                            <i class="fas fa-city"></i> City & Country
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="searchMethod" value="coordinates">
+                            <i class="fas fa-map-marker-alt"></i> Coordinates
+                        </label>
+                    </div>
+                </div>
+
+                <div id="cityFields">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label><i class="fas fa-city"></i> City</label>
+                            <input type="text" id="cityInput" placeholder="Enter city name" value="London">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-flag"></i> Country</label>
+                            <input type="text" id="countryInput" placeholder="Enter country code" value="UK">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="coordFields" style="display: none;">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label><i class="fas fa-latitude"></i> Latitude</label>
+                            <input type="number" id="latInput" placeholder="51.5074" step="any" value="51.5074">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-longitude"></i> Longitude</label>
+                            <input type="number" id="lonInput" placeholder="-0.1278" step="any" value="-0.1278">
+                        </div>
+                    </div>
+                    <button class="btn-secondary" onclick="useMyLocation()">
+                        <i class="fas fa-location-crosshairs"></i> Use My Location
+                    </button>
+                </div>
+
+                <div class="input-group">
+                    <label><i class="fas fa-key"></i> API Key</label>
+                    <div class="input-with-action">
+                        <input type="text" id="apiKeyInput" placeholder="Enter your API key">
+                        <button class="btn-icon" onclick="loadApiKey()">
+                            <i class="fas fa-history"></i> Load from Storage
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-primary search-btn" onclick="fetchWeather()">
+                    <i class="fas fa-cloud-sun"></i> Get Weather
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Weather Display -->
+        <!-- Current Weather Display -->
+        <div class="current-weather card" id="currentWeather" style="display: none;">
+            <div class="weather-header">
+                <h2><i class="fas fa-map-marker-alt"></i> Current Weather</h2>
+                <span class="last-updated" id="lastUpdated"></span>
+            </div>
+
+            <div class="weather-main">
+                <div class="location-info">
+                    <h3 id="locationName">Loading...</h3>
+                    <p id="coordinates">Coordinates: Loading...</p>
+                </div>
+
+                <div class="weather-condition">
+                    <div class="temp-display">
+                        <span class="temperature" id="temperature">--°</span>
+                        <span class="temp-unit">C</span>
+                    </div>
+                    <div class="condition-info">
+                        <i class="weather-icon wi wi-day-sunny" id="weatherIcon"></i>
+                        <span class="condition" id="condition">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Add current conditions -->
+                <div class="current-conditions">
+                    <div class="condition-card">
+                        <i class="fas fa-wind"></i>
+                        <div class="value" id="currentWindSpeed">-- km/h</div>
+                        <div class="label">Wind Speed</div>
+                    </div>
+                    <div class="condition-card">
+                        <i class="fas fa-clock"></i>
+                        <div class="value" id="currentTime">--:--</div>
+                        <div class="label">Time</div>
+                    </div>
+                    <div class="condition-card">
+                        <i class="fas fa-mountain"></i>
+                        <div class="value" id="elevation">-- m</div>
+                        <div class="label">Elevation</div>
+                    </div>
+                    <div class="condition-card">
+                        <i class="fas fa-globe"></i>
+                        <div class="value" id="timezone">--</div>
+                        <div class="label">Timezone</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section" id="chartsSection" style="display: none;">
+            <h2><i class="fas fa-chart-line"></i> Weather Analytics</h2>
+
+            <div class="charts-grid">
+                <div class="chart-card card">
+                    <h3><i class="fas fa-thermometer-half"></i> Temperature Trends</h3>
+                    <div class="chart-container">
+                        <canvas id="tempChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card card">
+                    <h3><i class="fas fa-tint"></i> Humidity & Pressure</h3>
+                    <div class="chart-container">
+                        <canvas id="humidityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card card">
+                    <h3><i class="fas fa-wind"></i> Wind Analysis</h3>
+                    <div class="chart-container">
+                        <canvas id="windChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card card">
+                    <h3><i class="fas fa-cloud"></i> Weather Conditions</h3>
+                    <div class="chart-container">
+                        <canvas id="conditionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecast Table -->
+        <!-- Hourly Forecast Table -->
+        <div class="hourly-section card" id="hourlySection" style="display: none;">
+            <h2><i class="fas fa-clock"></i> 7-Day Hourly Forecast</h2>
+            <div class="table-container">
+                <table class="hourly-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar-day"></i> Time</th>
+                            <th><i class="fas fa-thermometer-half"></i> Temperature</th>
+                            <th><i class="fas fa-tint"></i> Humidity</th>
+                            <th><i class="fas fa-wind"></i> Wind Speed</th>
+                            <th><i class="fas fa-cloud"></i> Condition</th>
+                            <th><i class="fas fa-temperature-high"></i> Feels Like</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hourlyTableBody">
+                        <!-- Hourly rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add this to the charts section in weather.html -->
+        <div class="charts-grid">
+            <div class="chart-card card">
+                <h3><i class="fas fa-thermometer-half"></i> Temperature Trends (24h)</h3>
+                <div class="chart-container">
+                    <canvas id="tempChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card card">
+                <h3><i class="fas fa-tint"></i> Humidity Levels (24h)</h3>
+                <div class="chart-container">
+                    <canvas id="humidityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card card">
+                <h3><i class="fas fa-wind"></i> Wind Speed Analysis (24h)</h3>
+                <div class="chart-container">
+                    <canvas id="windChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card card">
+                <h3><i class="fas fa-chart-scatter"></i> Temperature vs Humidity</h3>
+                <div class="chart-container">
+                    <canvas id="correlationChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather Map (Placeholder) -->
+        <div class="map-section card" id="mapSection" style="display: none;">
+            <h2><i class="fas fa-map"></i> Weather Map</h2>
+            <div class="map-placeholder">
+                <i class="fas fa-globe-americas fa-4x"></i>
+                <p>Weather map visualization would appear here</p>
+                <p class="map-coordinates" id="mapCoordinates">Coordinates: 51.5074° N, -0.1278° W</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-info-circle"></i> About</h3>
+                    <p>This weather dashboard connects to your API endpoints to display real-time weather data with
+                        beautiful visualizations.</p>
+                </div>
+                <div class="footer-section">
+                    <h3><i class="fas fa-bolt"></i> Quick Tips</h3>
+                    <ul>
+                        <li>Generate API key from the main dashboard</li>
+                        <li>Search by city or coordinates</li>
+                        <li>Data updates automatically</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3><i class="fas fa-database"></i> Data Sources</h3>
+                    <p>Weather data sourced from your API at:</p>
+                    <code>http://localhost:5000/api/v1/weather</code>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>Weather Dashboard &copy; 2023 | Connected to your API</p>
+                <!-- <div class="api-status">
+                    <span>API Status:</span>
+                    <div class="status-dot" id="apiStatusDot"></div>
+                    <span id="apiStatusText">Checking...</span>
+                </div> -->
+            </div>
+        </footer>
+    </div>
+
+    <!-- External JS -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <!-- Custom JS -->
+    <script src="weather.js"></script>
+</body>
+
+</html>

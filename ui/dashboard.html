@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Dashboard | Your API Endpoints</title>
+
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/json-viewer/1.4.0/json-viewer.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <h1>API Dashboard</h1>
+            </div>
+            <p class="subtitle">Interactive UI for your API endpoints running on localhost:5000</p>
+        </header>
+
+        <!-- API Connection Info -->
+        <div class="api-info card">
+            <div class="api-url-section">
+                <i class="fas fa-server fa-2x"></i>
+                <div>
+                    <h3>API Base URL</h3>
+                    <div class="url-display" id="apiUrl">http://localhost:5000/api/v1</div>
+                </div>
+            </div>
+            <div class="status-section">
+                <div class="status-indicator">
+                    <span>Status:</span>
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Checking...</span>
+                </div>
+                <button class="btn-secondary" id="testConnection">
+                    <i class="fas fa-sync-alt"></i> Test Connection
+                </button>
+            </div>
+        </div>
+
+        <!-- Auth Section -->
+        <section class="section">
+            <h2><i class="fas fa-user-shield"></i> Authentication</h2>
+            <div class="endpoints-grid">
+                <!-- Login Endpoint -->
+                <div class="endpoint-card card" id="loginCard">
+                    <div class="card-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/auth/login</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="description">Login with email and password to get JWT token</p>
+
+                        <div class="input-group">
+                            <label>Email</label>
+                            <input type="email" id="loginEmail" placeholder="user@example.com" value="test@example.com">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Password</label>
+                            <input type="password" id="loginPassword" placeholder="Password" value="password123">
+                        </div>
+
+                        <button class="btn-primary test-btn" onclick="testLogin()">
+                            <i class="fas fa-sign-in-alt"></i> Test Login
+                        </button>
+
+                        <div class="response-container" id="loginResponse">
+                            <div class="response-header">
+                                <span>Response</span>
+                                <button class="btn-icon" onclick="copyResponse('loginResponse')">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                            <pre class="response-content" id="loginResponseContent"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Register Endpoint -->
+                <div class="endpoint-card card" id="registerCard">
+                    <div class="card-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/auth/register</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="description">Register a new user account</p>
+
+                        <div class="input-group">
+                            <label>Email</label>
+                            <input type="email" id="registerEmail" placeholder="newuser@example.com">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Password</label>
+                            <input type="password" id="registerPassword" placeholder="Strong password">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Name (Optional)</label>
+                            <input type="text" id="registerName" placeholder="Your name">
+                        </div>
+
+                        <button class="btn-primary test-btn" onclick="testRegister()">
+                            <i class="fas fa-user-plus"></i> Test Register
+                        </button>
+
+                        <div class="response-container" id="registerResponse">
+                            <div class="response-header">
+                                <span>Response</span>
+                                <button class="btn-icon" onclick="copyResponse('registerResponse')">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                            <pre class="response-content" id="registerResponseContent"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Protected Endpoints -->
+        <section class="section">
+            <h2><i class="fas fa-lock"></i> Protected Endpoints (Requires JWT)</h2>
+
+            <!-- Token Display -->
+            <div class="token-section card">
+                <div class="token-header">
+                    <h3><i class="fas fa-key"></i> JWT Token</h3>
+                    <div class="token-actions">
+                        <button class="btn-secondary" onclick="clearToken()">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                        <button class="btn-icon" onclick="copyToken()">
+                            <i class="far fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="token-display" id="tokenDisplay">
+                    <span id="tokenText">No token available. Login first.</span>
+                </div>
+            </div>
+
+            <div class="endpoints-grid">
+                <!-- Generate API Key -->
+                <div class="endpoint-card card" id="generateCard">
+                    <div class="card-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/generate</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="description">Generate API key for logged-in user</p>
+
+                        <div class="info-note">
+                            <i class="fas fa-info-circle"></i>
+                            Requires valid JWT token in Authorization header
+                        </div>
+
+                        <button class="btn-primary test-btn" onclick="testGenerate()">
+                            <i class="fas fa-key"></i> Generate API Key
+                        </button>
+
+                        <div class="response-container" id="generateResponse">
+                            <div class="response-header">
+                                <span>Response</span>
+                                <button class="btn-icon" onclick="copyResponse('generateResponse')">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                            <pre class="response-content" id="generateResponseContent"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weather Endpoint -->
+                <!-- Weather Endpoint -->
+                <div class="endpoint-card card" id="weatherCard">
+                    <div class="card-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/weather</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="description">Get weather information (requires API key in x-api-key header)</p>
+
+                        <div class="input-group">
+                            <label>API Key</label>
+                            <div class="input-with-action">
+                                <input type="text" id="weatherApiKey" placeholder="Enter API key from /generate">
+                                <button class="btn-icon-small" onclick="pasteApiKey()" type="button">
+                                    <i class="fas fa-paste"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Method Selection -->
+                        <div class="method-selection">
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="weatherMethod" value="city" checked
+                                        onchange="toggleWeatherMethod()">
+                                    <span>City & Country</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="weatherMethod" value="coordinates"
+                                        onchange="toggleWeatherMethod()">
+                                    <span>Coordinates</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- City & Country Fields -->
+                        <div id="cityCountryFields">
+                            <div class="input-group">
+                                <label>City</label>
+                                <input type="text" id="weatherCity" placeholder="London" value="London">
+                            </div>
+                            <div class="input-group">
+                                <label>Country</label>
+                                <input type="text" id="weatherCountry" placeholder="UK" value="UK">
+                            </div>
+                        </div>
+
+                        <!-- Coordinates Fields (Hidden by default) -->
+                        <div id="coordinatesFields" style="display: none;">
+                            <div class="input-group">
+                                <label>Latitude</label>
+                                <input type="number" step="any" id="weatherLat" placeholder="51.5074" value="51.5074">
+                            </div>
+                            <div class="input-group">
+                                <label>Longitude</label>
+                                <input type="number" step="any" id="weatherLon" placeholder="-0.1278" value="-0.1278">
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn-primary test-btn" onclick="testWeather()">
+                                <i class="fas fa-cloud-sun"></i> Get Weather
+                            </button>
+                            <button class="btn-secondary" onclick="testWeatherMock()">
+                                <i class="fas fa-vial"></i> Test Mock
+                            </button>
+                        </div>
+
+                        <div class="response-container" id="weatherResponse">
+                            <div class="response-header">
+                                <span>Response</span>
+                                <button class="btn-icon" onclick="copyResponse('weatherResponse')" type="button">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                            <pre class="response-content" id="weatherResponseContent"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Stats -->
+                <div class="endpoint-card card" id="adminCard">
+                    <div class="card-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/admin/stats</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="description">Get admin statistics (requires admin privileges)</p>
+
+                        <div class="info-note warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Requires admin JWT token
+                        </div>
+
+                        <div class="input-group">
+                            <label>Admin Token</label>
+                            <div class="input-with-action">
+                                <input type="text" id="adminToken" placeholder="Enter admin JWT token">
+                                <button class="btn-icon-small" onclick="pasteToken()">
+                                    <i class="fas fa-paste"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button class="btn-primary test-btn" onclick="testAdminStats()">
+                            <i class="fas fa-chart-bar"></i> Get Admin Stats
+                        </button>
+
+                        <div class="response-container" id="adminResponse">
+                            <div class="response-header">
+                                <span>Response</span>
+                                <button class="btn-icon" onclick="copyResponse('adminResponse')">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                            <pre class="response-content" id="adminResponseContent"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-info-circle"></i> API Info</h3>
+                    <p>Base URL: <code>http://localhost:5000/api/v1</code></p>
+                    <p>All endpoints follow RESTful conventions</p>
+                </div>
+                <div class="footer-section">
+                    <h3><i class="fas fa-bolt"></i> Quick Tips</h3>
+                    <ul>
+                        <li>1. Login first to get JWT token</li>
+                        <li>2. Use token for protected endpoints</li>
+                        <li>3. Generate API key for weather endpoint</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>API Dashboard &copy; 2023 | Made for your API endpoints</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- External JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json-viewer/1.4.0/json-viewer.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="file.js"></script>
+</body>
+
+</html>

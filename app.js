@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
@@ -7,21 +6,19 @@ import cookieParser from "cookie-parser";
 import { configDotenv } from "dotenv";
 import session from "express-session";
 
-import indexRouter from "./ui/routes/index.js";
 import apiRouter from "./api/index.js";
 
 configDotenv();
 
 const app = express();
-const server = express();
 
 app.use(helmet());
-app.use(
-  cors({
-    origin: process.env.BASE_URL,
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  credentials: true
+}));
 
 app.use(morgan("dev"));
 app.use(express.json());
@@ -29,12 +26,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(session({
-    secret: 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: false // true only if using HTTPS
-    }
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false
+  }
 }));
 
 app.use((req, res, next) => {
@@ -42,14 +39,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/api", apiRouter);
 
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(path.resolve(), 'ui/views'));
-
-
-app.use("/", indexRouter);
-server.use("/api", apiRouter);
-
-
-export default {app, server};
+export default { app };
